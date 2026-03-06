@@ -33,8 +33,9 @@ export default function App() {
     try {
       const results = await generateBios(formData);
       setBios(results);
-    } catch (err) {
-      setError('Failed to generate bios. Please try again.');
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to generate bios. Please try again.';
+      setError(errorMessage);
       console.error(err);
     } finally {
       setIsLoading(false);

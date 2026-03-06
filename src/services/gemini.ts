@@ -1,6 +1,17 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai: GoogleGenAI | null = null;
+
+const getAiClient = () => {
+  if (!ai) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("Gemini API Key is missing. Please set GEMINI_API_KEY in your environment variables.");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 export interface BioFormData {
   name: string;
@@ -40,7 +51,8 @@ export async function generateBios(data: BioFormData): Promise<string[]> {
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const client = getAiClient();
+    const response = await client.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
@@ -59,6 +71,6 @@ export async function generateBios(data: BioFormData): Promise<string[]> {
     return Array.isArray(bios) ? bios : [];
   } catch (error) {
     console.error("Error generating bios:", error);
-    throw new Error("Failed to generate bios. Please try again.");
+    throw error;
   }
 }
